@@ -3,32 +3,50 @@ version: "3.9"
 services:
   webserver:
     build: 
-      context: bin/python
-    command: python manage.py runserver 0.0.0.0:8000
-    container_name: 'python'
+      context: .
+      dockerfile: Dockerfile
+    container_name: webserver
     ports:
       - "8000:8000"
     links: 
       - mysql
     volumes: 
-      - ./www:/usr/src/app
+      - .:/app
+    depends_on:
+      - 'db'
     networks:
       - dev-network
-  mysql:
-    image: 'mysql:latest'
-    container_name: 'mysql'
+  db:
+    image: 'mariadb:latest'
     restart: 'always'
+    container_name: db
     ports:
       - "3306:3306"
     volumes: 
-      - ./data/mysql:/var/lib/mysql
-      - ./logs/mysql:/var/log/mysql
+      - ./data/mariadb:/var/lib/mysql
+      - ./logs/mariadb:/var/log/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_USER: admin
       MYSQL_PASSWORD: admin
     networks:
       - dev-network
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    links:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    ports:
+      - '8080:80'
+    volumes:
+      - /sessions
+    networks:
+      - dev-network
+    depends_on:
+      - 'db'
 networks:
   dev-network:
     driver: bridge
