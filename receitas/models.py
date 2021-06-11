@@ -13,3 +13,5 @@ class Receita(models.Model):
     foto = models.ImageField(upload_to='imgs/%d/%m/%Y/', blank=True)
     pessoa = models.ForeignKey(Pessoa, on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
+    def __str__(self):
+        return self.nome
